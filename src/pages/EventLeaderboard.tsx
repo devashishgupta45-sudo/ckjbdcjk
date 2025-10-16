@@ -453,19 +453,19 @@ const EventLeaderboard = () => {
     const B1 = getGroupWinner('B');
     const C1 = getGroupWinner('C');
 
+    // Three-team knockout: A1 vs B1 in semifinal, winner faces C1 in final
     const semifinals = [
       { teamA: A1, teamB: B1, scoreA: 0, scoreB: 0, status: 'upcoming' as const },
-      { teamA: C1, teamB: 'Winner SF1', scoreA: 0, scoreB: 0, status: 'upcoming' as const },
     ];
 
     const finals = [
-      { teamA: 'Winner SF1', teamB: 'Winner SF2', scoreA: 0, scoreB: 0, status: 'upcoming' as const },
+      { teamA: 'Winner SF1', teamB: C1, scoreA: 0, scoreB: 0, status: 'upcoming' as const },
     ];
 
     return {
       columns: [
-        { title: 'Semifinals', matches: semifinals },
-        { title: 'Finals', matches: finals },
+        { title: 'Semifinal', matches: semifinals },
+        { title: 'Final', matches: finals },
       ],
     } as Bracket;
   };
@@ -652,14 +652,12 @@ const EventLeaderboard = () => {
       const match = next.columns[col].matches[mIdx];
       if (match.scoreA !== match.scoreB) {
         const winner = match.scoreA > match.scoreB ? match.teamA : match.teamB;
-        if (col === 0) {
-          if (mIdx === 0) {
-            (next.columns[1].matches[0] as any).teamA = winner;
-          } else if (mIdx === 1) {
-            (next.columns[1].matches[0] as any).teamB = winner;
-          }
+        if (col === 0 && mIdx === 0) {
+          // Winner of semifinal advances to Final (teamA slot)
+          (next.columns[1].matches[0] as any).teamA = winner;
         }
-        if (col === 1) {
+        if (col === 1 && mIdx === 0) {
+          // Final decides the champion
           (next as any).winner = winner;
         }
       }
@@ -1637,7 +1635,7 @@ const EventLeaderboard = () => {
 
     const isMobileLegends = gameId === "ml";
     const isValorant = gameId === "valorant";
-    const showGroupTotalPoints = !isMobileLegends;
+    const showGroupTotalPoints = !(isMobileLegends || isValorant);
 
 
 
@@ -1655,7 +1653,7 @@ const EventLeaderboard = () => {
               ) : gameId === 'bgmi' ? (
                 <TabsTrigger value="groupstage">Finals</TabsTrigger>
               ) : (
-                <TabsTrigger value="pointrush">{gameId === 'codm' ? 'Playoffs' : 'Double Elimination'}</TabsTrigger>
+                <TabsTrigger value="pointrush">{gameId === 'codm' ? 'Playoffs' : gameId === 'valorant' ? 'Knockout' : 'Double Elimination'}</TabsTrigger>
               )}
             </TabsList>
           </div>
@@ -2011,16 +2009,6 @@ const EventLeaderboard = () => {
                                         </div>
                                       </TableCell>
                                       <>
-                                        {isValorant ? (
-                                          <TableCell className="text-right font-semibold">
-                                            {isValorant && canEdit ? (
-                                              <Input className="text-right" type="number" value={displayPoints} onChange={(e) => updateValorantPoints('A', origIdx, e.target.value)} />
-                                            ) : (
-                                              displayPoints
-                                            )}
-                                          </TableCell>
-                                        ) : (
-                                          <>
                                             <TableCell className="text-right">
                                               {isMobileLegends && canEdit ? (
                                                 <Input className="text-right" type="number" value={displayGamesPlayed} onChange={(e) => updateMlStat('A', origIdx, 'gamesPlayed', e.target.value)} />
@@ -2044,8 +2032,6 @@ const EventLeaderboard = () => {
                                                 )}
                                               </TableCell>
                                             )}
-                                          </>
-                                        )}
                                       </>
                                     </TableRow>
                                   );
@@ -2289,16 +2275,6 @@ const EventLeaderboard = () => {
                                         </div>
                                       </TableCell>
                                       <>
-                                        {isValorant ? (
-                                          <TableCell className="text-right font-semibold">
-                                            {isValorant && canEdit ? (
-                                              <Input className="text-right" type="number" value={displayPoints} onChange={(e) => updateValorantPoints('B', origIdx, e.target.value)} />
-                                            ) : (
-                                              displayPoints
-                                            )}
-                                          </TableCell>
-                                        ) : (
-                                          <>
                                             <TableCell className="text-right">
                                               {isMobileLegends && canEdit ? (
                                                 <Input className="text-right" type="number" value={displayGamesPlayed} onChange={(e) => updateMlStat('B', origIdx, 'gamesPlayed', e.target.value)} />
@@ -2322,8 +2298,6 @@ const EventLeaderboard = () => {
                                                 )}
                                               </TableCell>
                                             )}
-                                          </>
-                                        )}
                                       </>
                                     </TableRow>
                                   );
@@ -2337,7 +2311,7 @@ const EventLeaderboard = () => {
                   </Card>
                 </TabsContent>
 
-{gameId !== 'valorant' && (
+{true && (
                 <TabsContent value="group-c">
                   <Card className="glass-card border-primary/20">
                     <CardHeader>
@@ -2564,16 +2538,6 @@ const EventLeaderboard = () => {
                                         </div>
                                       </TableCell>
                                       <>
-                                        {isValorant ? (
-                                          <TableCell className="text-right font-semibold">
-                                            {isValorant && canEdit ? (
-                                              <Input className="text-right" type="number" value={displayPoints} onChange={(e) => updateValorantPoints('C', origIdx, e.target.value)} />
-                                            ) : (
-                                              displayPoints
-                                            )}
-                                          </TableCell>
-                                        ) : (
-                                          <>
                                             <TableCell className="text-right">
                                               {isMobileLegends && canEdit ? (
                                                 <Input className="text-right" type="number" value={displayGamesPlayed} onChange={(e) => updateMlStat('C', origIdx, 'gamesPlayed', e.target.value)} />
@@ -2597,8 +2561,6 @@ const EventLeaderboard = () => {
                                                 )}
                                               </TableCell>
                                             )}
-                                          </>
-                                        )}
                                       </>
                                     </TableRow>
                                   );
