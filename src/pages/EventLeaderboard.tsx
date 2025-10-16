@@ -453,19 +453,19 @@ const EventLeaderboard = () => {
     const B1 = getGroupWinner('B');
     const C1 = getGroupWinner('C');
 
+    // Three-team knockout: A1 vs B1 in semifinal, winner faces C1 in final
     const semifinals = [
       { teamA: A1, teamB: B1, scoreA: 0, scoreB: 0, status: 'upcoming' as const },
-      { teamA: C1, teamB: 'Winner SF1', scoreA: 0, scoreB: 0, status: 'upcoming' as const },
     ];
 
     const finals = [
-      { teamA: 'Winner SF1', teamB: 'Winner SF2', scoreA: 0, scoreB: 0, status: 'upcoming' as const },
+      { teamA: 'Winner SF1', teamB: C1, scoreA: 0, scoreB: 0, status: 'upcoming' as const },
     ];
 
     return {
       columns: [
-        { title: 'Semifinals', matches: semifinals },
-        { title: 'Finals', matches: finals },
+        { title: 'Semifinal', matches: semifinals },
+        { title: 'Final', matches: finals },
       ],
     } as Bracket;
   };
