@@ -2081,7 +2081,7 @@ const EventLeaderboard = () => {
                                   const avatar = "A";
                                   const storedRow = mlGroupData['A']?.[origIdx];
                                   const valorantRow = valorantGroupsData['A']?.[origIdx];
-                                  const displayTeam = storedRow?.team ?? valorantRow?.team ?? row.team;
+                                  const displayTeam = isValorant ? (valorantRow?.team ?? row.team) : (storedRow?.team ?? row.team);
                                   const displayGamesPlayed = isValorant ? (valorantRow?.gamesPlayed ?? gamesPlayed) : (storedRow?.gamesPlayed ?? gamesPlayed);
                                   const displayGamesWon = isValorant ? (valorantRow?.gamesWon ?? gamesWon) : (storedRow?.gamesWon ?? gamesWon);
                                   const displayPoints = valorantRow?.points ?? row.points;
@@ -2355,7 +2355,7 @@ const EventLeaderboard = () => {
                                   const avatar = "B";
                                   const storedRow = mlGroupData['B']?.[origIdx];
                                   const valorantRow = valorantGroupsData['B']?.[origIdx];
-                                  const displayTeam = storedRow?.team ?? valorantRow?.team ?? row.team;
+                                  const displayTeam = isValorant ? (valorantRow?.team ?? row.team) : (storedRow?.team ?? row.team);
                                   const displayGamesPlayed = isValorant ? (valorantRow?.gamesPlayed ?? gamesPlayed) : (storedRow?.gamesPlayed ?? gamesPlayed);
                                   const displayGamesWon = isValorant ? (valorantRow?.gamesWon ?? gamesWon) : (storedRow?.gamesWon ?? gamesWon);
                                   const displayPoints = valorantRow?.points ?? row.points;
@@ -2626,7 +2626,7 @@ const EventLeaderboard = () => {
                                   const avatar = "C";
                                   const storedRow = mlGroupData['C']?.[origIdx];
                                   const valorantRow = valorantGroupsData['C']?.[origIdx];
-                                  const displayTeam = storedRow?.team ?? valorantRow?.team ?? row.team;
+                                  const displayTeam = isValorant ? (valorantRow?.team ?? row.team) : (storedRow?.team ?? row.team);
                                   const displayGamesPlayed = isValorant ? (valorantRow?.gamesPlayed ?? gamesPlayed) : (storedRow?.gamesPlayed ?? gamesPlayed);
                                   const displayGamesWon = isValorant ? (valorantRow?.gamesWon ?? gamesWon) : (storedRow?.gamesWon ?? gamesWon);
                                   const displayPoints = valorantRow?.points ?? row.points;
