@@ -2009,16 +2009,6 @@ const EventLeaderboard = () => {
                                         </div>
                                       </TableCell>
                                       <>
-                                        {isValorant ? (
-                                          <TableCell className="text-right font-semibold">
-                                            {isValorant && canEdit ? (
-                                              <Input className="text-right" type="number" value={displayPoints} onChange={(e) => updateValorantPoints('A', origIdx, e.target.value)} />
-                                            ) : (
-                                              displayPoints
-                                            )}
-                                          </TableCell>
-                                        ) : (
-                                          <>
                                             <TableCell className="text-right">
                                               {isMobileLegends && canEdit ? (
                                                 <Input className="text-right" type="number" value={displayGamesPlayed} onChange={(e) => updateMlStat('A', origIdx, 'gamesPlayed', e.target.value)} />
@@ -2042,8 +2032,6 @@ const EventLeaderboard = () => {
                                                 )}
                                               </TableCell>
                                             )}
-                                          </>
-                                        )}
                                       </>
                                     </TableRow>
                                   );
@@ -2287,16 +2275,6 @@ const EventLeaderboard = () => {
                                         </div>
                                       </TableCell>
                                       <>
-                                        {isValorant ? (
-                                          <TableCell className="text-right font-semibold">
-                                            {isValorant && canEdit ? (
-                                              <Input className="text-right" type="number" value={displayPoints} onChange={(e) => updateValorantPoints('B', origIdx, e.target.value)} />
-                                            ) : (
-                                              displayPoints
-                                            )}
-                                          </TableCell>
-                                        ) : (
-                                          <>
                                             <TableCell className="text-right">
                                               {isMobileLegends && canEdit ? (
                                                 <Input className="text-right" type="number" value={displayGamesPlayed} onChange={(e) => updateMlStat('B', origIdx, 'gamesPlayed', e.target.value)} />
@@ -2320,8 +2298,6 @@ const EventLeaderboard = () => {
                                                 )}
                                               </TableCell>
                                             )}
-                                          </>
-                                        )}
                                       </>
                                     </TableRow>
                                   );
@@ -2562,16 +2538,6 @@ const EventLeaderboard = () => {
                                         </div>
                                       </TableCell>
                                       <>
-                                        {isValorant ? (
-                                          <TableCell className="text-right font-semibold">
-                                            {isValorant && canEdit ? (
-                                              <Input className="text-right" type="number" value={displayPoints} onChange={(e) => updateValorantPoints('C', origIdx, e.target.value)} />
-                                            ) : (
-                                              displayPoints
-                                            )}
-                                          </TableCell>
-                                        ) : (
-                                          <>
                                             <TableCell className="text-right">
                                               {isMobileLegends && canEdit ? (
                                                 <Input className="text-right" type="number" value={displayGamesPlayed} onChange={(e) => updateMlStat('C', origIdx, 'gamesPlayed', e.target.value)} />
@@ -2595,8 +2561,6 @@ const EventLeaderboard = () => {
                                                 )}
                                               </TableCell>
                                             )}
-                                          </>
-                                        )}
                                       </>
                                     </TableRow>
                                   );
