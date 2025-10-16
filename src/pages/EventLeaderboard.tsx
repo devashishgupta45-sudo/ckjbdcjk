@@ -319,11 +319,16 @@ const getGroupRowsForGame = (
       wins[winner] = (wins[winner] ?? 0) + 1;
     }
 
-    const withStats = baseRows.map((r) => ({
-      ...r,
-      gamesPlayed: 2,
-      gamesWon: wins[r.team] ?? 0,
-    }));
+    const withStats = baseRows.map((r) => {
+      const computedWins = wins[r.team] ?? 0;
+      const gp = typeof r.gamesPlayed === 'number' ? r.gamesPlayed : 2;
+      const gw = typeof r.gamesWon === 'number' ? r.gamesWon : computedWins;
+      return {
+        ...r,
+        gamesPlayed: gp,
+        gamesWon: gw,
+      };
+    });
 
     withStats.sort((a, b) => {
       const aw = Number(a.gamesWon ?? 0) || 0;
@@ -1273,6 +1278,22 @@ const EventLeaderboard = () => {
     setIsDirty(true);
   };
 
+  const updateValorantStat = (group: "A" | "B" | "C", origIdx: number, key: "gamesPlayed" | "gamesWon", value: string) => {
+    const numericValue = Number(value);
+    setValorantGroupsData((prev) => {
+      const next = { ...prev } as Record<"A" | "B" | "C", SimpleGroupRow[]>;
+      const rows = next[group] ? [...next[group]] : [];
+      const existing = rows[origIdx] ?? { rank: origIdx + 1, team: `Team ${origIdx + 1}`, points: 0, originalIndex: origIdx };
+      rows[origIdx] = {
+        ...existing,
+        [key]: Number.isFinite(numericValue) ? numericValue : 0,
+      } as SimpleGroupRow;
+      next[group] = rows;
+      return next;
+    });
+    setIsDirty(true);
+  };
+
   useEffect(() => {
     setFinalsRows((prev) => {
       const topTeams = overallRows.slice(0, 16);
@@ -1597,6 +1618,8 @@ const EventLeaderboard = () => {
                 rank: typeof row.rank === "number" ? row.rank : index + 1,
                 team: row.team ?? base[letter][index]?.team ?? `Team ${index + 1}`,
                 points: typeof row.points === "number" ? row.points : base[letter][index]?.points ?? 0,
+                gamesPlayed: typeof (row as any).gamesPlayed === "number" ? (row as any).gamesPlayed : (base[letter][index] as any)?.gamesPlayed,
+                gamesWon: typeof (row as any).gamesWon === "number" ? (row as any).gamesWon : (base[letter][index] as any)?.gamesWon,
                 originalIndex: row.originalIndex ?? index,
               }));
             }
@@ -2059,8 +2082,8 @@ const EventLeaderboard = () => {
                                   const storedRow = mlGroupData['A']?.[origIdx];
                                   const valorantRow = valorantGroupsData['A']?.[origIdx];
                                   const displayTeam = storedRow?.team ?? valorantRow?.team ?? row.team;
-                                  const displayGamesPlayed = storedRow?.gamesPlayed ?? gamesPlayed;
-                                  const displayGamesWon = storedRow?.gamesWon ?? gamesWon;
+                                  const displayGamesPlayed = isValorant ? (valorantRow?.gamesPlayed ?? gamesPlayed) : (storedRow?.gamesPlayed ?? gamesPlayed);
+                                  const displayGamesWon = isValorant ? (valorantRow?.gamesWon ?? gamesWon) : (storedRow?.gamesWon ?? gamesWon);
                                   const displayPoints = valorantRow?.points ?? row.points;
 
 
@@ -2081,15 +2104,23 @@ const EventLeaderboard = () => {
                                       </TableCell>
                                       <>
                                             <TableCell className="text-right">
-                                              {isMobileLegends && canEdit ? (
-                                                <Input className="text-right" type="number" value={displayGamesPlayed} onChange={(e) => updateMlStat('A', origIdx, 'gamesPlayed', e.target.value)} />
+                                              {canEdit && (isMobileLegends || isValorant) ? (
+                                                isMobileLegends ? (
+                                                  <Input className="text-right" type="number" value={displayGamesPlayed} onChange={(e) => updateMlStat('A', origIdx, 'gamesPlayed', e.target.value)} />
+                                                ) : (
+                                                  <Input className="text-right" type="number" value={displayGamesPlayed ?? 2} onChange={(e) => updateValorantStat('A', origIdx, 'gamesPlayed', e.target.value)} />
+                                                )
                                               ) : (
                                                 displayGamesPlayed
                                               )}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                              {isMobileLegends && canEdit ? (
-                                                <Input className="text-right" type="number" value={displayGamesWon} onChange={(e) => updateMlStat('A', origIdx, 'gamesWon', e.target.value)} />
+                                              {canEdit && (isMobileLegends || isValorant) ? (
+                                                isMobileLegends ? (
+                                                  <Input className="text-right" type="number" value={displayGamesWon} onChange={(e) => updateMlStat('A', origIdx, 'gamesWon', e.target.value)} />
+                                                ) : (
+                                                  <Input className="text-right" type="number" value={displayGamesWon ?? 0} onChange={(e) => updateValorantStat('A', origIdx, 'gamesWon', e.target.value)} />
+                                                )
                                               ) : (
                                                 displayGamesWon
                                               )}
@@ -2325,8 +2356,8 @@ const EventLeaderboard = () => {
                                   const storedRow = mlGroupData['B']?.[origIdx];
                                   const valorantRow = valorantGroupsData['B']?.[origIdx];
                                   const displayTeam = storedRow?.team ?? valorantRow?.team ?? row.team;
-                                  const displayGamesPlayed = storedRow?.gamesPlayed ?? gamesPlayed;
-                                  const displayGamesWon = storedRow?.gamesWon ?? gamesWon;
+                                  const displayGamesPlayed = isValorant ? (valorantRow?.gamesPlayed ?? gamesPlayed) : (storedRow?.gamesPlayed ?? gamesPlayed);
+                                  const displayGamesWon = isValorant ? (valorantRow?.gamesWon ?? gamesWon) : (storedRow?.gamesWon ?? gamesWon);
                                   const displayPoints = valorantRow?.points ?? row.points;
 
 
@@ -2347,15 +2378,23 @@ const EventLeaderboard = () => {
                                       </TableCell>
                                       <>
                                             <TableCell className="text-right">
-                                              {isMobileLegends && canEdit ? (
-                                                <Input className="text-right" type="number" value={displayGamesPlayed} onChange={(e) => updateMlStat('B', origIdx, 'gamesPlayed', e.target.value)} />
+                                              {canEdit && (isMobileLegends || isValorant) ? (
+                                                isMobileLegends ? (
+                                                  <Input className="text-right" type="number" value={displayGamesPlayed} onChange={(e) => updateMlStat('B', origIdx, 'gamesPlayed', e.target.value)} />
+                                                ) : (
+                                                  <Input className="text-right" type="number" value={displayGamesPlayed ?? 2} onChange={(e) => updateValorantStat('B', origIdx, 'gamesPlayed', e.target.value)} />
+                                                )
                                               ) : (
                                                 displayGamesPlayed
                                               )}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                              {isMobileLegends && canEdit ? (
-                                                <Input className="text-right" type="number" value={displayGamesWon} onChange={(e) => updateMlStat('B', origIdx, 'gamesWon', e.target.value)} />
+                                              {canEdit && (isMobileLegends || isValorant) ? (
+                                                isMobileLegends ? (
+                                                  <Input className="text-right" type="number" value={displayGamesWon} onChange={(e) => updateMlStat('B', origIdx, 'gamesWon', e.target.value)} />
+                                                ) : (
+                                                  <Input className="text-right" type="number" value={displayGamesWon ?? 0} onChange={(e) => updateValorantStat('B', origIdx, 'gamesWon', e.target.value)} />
+                                                )
                                               ) : (
                                                 displayGamesWon
                                               )}
@@ -2588,8 +2627,8 @@ const EventLeaderboard = () => {
                                   const storedRow = mlGroupData['C']?.[origIdx];
                                   const valorantRow = valorantGroupsData['C']?.[origIdx];
                                   const displayTeam = storedRow?.team ?? valorantRow?.team ?? row.team;
-                                  const displayGamesPlayed = storedRow?.gamesPlayed ?? gamesPlayed;
-                                  const displayGamesWon = storedRow?.gamesWon ?? gamesWon;
+                                  const displayGamesPlayed = isValorant ? (valorantRow?.gamesPlayed ?? gamesPlayed) : (storedRow?.gamesPlayed ?? gamesPlayed);
+                                  const displayGamesWon = isValorant ? (valorantRow?.gamesWon ?? gamesWon) : (storedRow?.gamesWon ?? gamesWon);
                                   const displayPoints = valorantRow?.points ?? row.points;
 
 
@@ -2610,15 +2649,23 @@ const EventLeaderboard = () => {
                                       </TableCell>
                                       <>
                                             <TableCell className="text-right">
-                                              {isMobileLegends && canEdit ? (
-                                                <Input className="text-right" type="number" value={displayGamesPlayed} onChange={(e) => updateMlStat('C', origIdx, 'gamesPlayed', e.target.value)} />
+                                              {canEdit && (isMobileLegends || isValorant) ? (
+                                                isMobileLegends ? (
+                                                  <Input className="text-right" type="number" value={displayGamesPlayed} onChange={(e) => updateMlStat('C', origIdx, 'gamesPlayed', e.target.value)} />
+                                                ) : (
+                                                  <Input className="text-right" type="number" value={displayGamesPlayed ?? 2} onChange={(e) => updateValorantStat('C', origIdx, 'gamesPlayed', e.target.value)} />
+                                                )
                                               ) : (
                                                 displayGamesPlayed
                                               )}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                              {isMobileLegends && canEdit ? (
-                                                <Input className="text-right" type="number" value={displayGamesWon} onChange={(e) => updateMlStat('C', origIdx, 'gamesWon', e.target.value)} />
+                                              {canEdit && (isMobileLegends || isValorant) ? (
+                                                isMobileLegends ? (
+                                                  <Input className="text-right" type="number" value={displayGamesWon} onChange={(e) => updateMlStat('C', origIdx, 'gamesWon', e.target.value)} />
+                                                ) : (
+                                                  <Input className="text-right" type="number" value={displayGamesWon ?? 0} onChange={(e) => updateValorantStat('C', origIdx, 'gamesWon', e.target.value)} />
+                                                )
                                               ) : (
                                                 displayGamesWon
                                               )}
