@@ -652,14 +652,12 @@ const EventLeaderboard = () => {
       const match = next.columns[col].matches[mIdx];
       if (match.scoreA !== match.scoreB) {
         const winner = match.scoreA > match.scoreB ? match.teamA : match.teamB;
-        if (col === 0) {
-          if (mIdx === 0) {
-            (next.columns[1].matches[0] as any).teamA = winner;
-          } else if (mIdx === 1) {
-            (next.columns[1].matches[0] as any).teamB = winner;
-          }
+        if (col === 0 && mIdx === 0) {
+          // Winner of semifinal advances to Final (teamA slot)
+          (next.columns[1].matches[0] as any).teamA = winner;
         }
-        if (col === 1) {
+        if (col === 1 && mIdx === 0) {
+          // Final decides the champion
           (next as any).winner = winner;
         }
       }
