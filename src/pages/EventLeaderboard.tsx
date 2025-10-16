@@ -1062,7 +1062,7 @@ const EventLeaderboard = () => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       const allowedEmail = (import.meta as any).env.VITE_ADMIN_EMAIL as string | undefined;
       const email = session?.user?.email;
-      setCanEdit((isAuthed() || (!!session && (!allowedEmail || email === allowedEmail))) && eventId === "lock-load");
+      setCanEdit(isAuthed() || (!!session && (!allowedEmail || email === allowedEmail)));
     });
     return () => {
       mounted = false;
