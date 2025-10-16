@@ -300,14 +300,42 @@ const getGroupRowsForGame = (
       originalIndex: row.originalIndex ?? index,
     }));
 
-    baseRows.sort((a, b) => {
-      const aPoints = Number(a.points ?? 0) || 0;
-      const bPoints = Number(b.points ?? 0) || 0;
-      if (bPoints !== aPoints) return bPoints - aPoints;
+    // Single round-robin in a 3-team group: 3 matches total, 2 per team
+    const teams = baseRows.map((r) => r.team);
+    const pts = Object.fromEntries(baseRows.map((r) => [r.team, Number(r.points ?? 0) || 0]));
+    const pairs: [number, number][] = [
+      [0, 1],
+      [0, 2],
+      [1, 2],
+    ];
+    const wins: Record<string, number> = Object.fromEntries(teams.map((t) => [t, 0]));
+
+    for (const [i, j] of pairs) {
+      const ti = teams[i];
+      const tj = teams[j];
+      const pi = pts[ti];
+      const pj = pts[tj];
+      const winner = pi === pj ? (ti.localeCompare(tj) <= 0 ? ti : tj) : pi > pj ? ti : tj;
+      wins[winner] = (wins[winner] ?? 0) + 1;
+    }
+
+    const withStats = baseRows.map((r) => ({
+      ...r,
+      gamesPlayed: 2,
+      gamesWon: wins[r.team] ?? 0,
+    }));
+
+    withStats.sort((a, b) => {
+      const aw = Number(a.gamesWon ?? 0) || 0;
+      const bw = Number(b.gamesWon ?? 0) || 0;
+      if (bw !== aw) return bw - aw;
+      const ap = Number(a.points ?? 0) || 0;
+      const bp = Number(b.points ?? 0) || 0;
+      if (bp !== ap) return bp - ap;
       return a.team.localeCompare(b.team);
     });
 
-    return baseRows.map((row, index) => ({ ...row, rank: index + 1 }));
+    return withStats.map((row, index) => ({ ...row, rank: index + 1 }));
   }
 
   if (gameId === "freefire" && group === "D") {
@@ -438,33 +466,83 @@ const EventLeaderboard = () => {
   const [valorantBracket, setValorantBracket] = useState<Bracket | null>(null);
 
   const buildValorantBracketFromGroups = (): Bracket => {
-    const getGroupWinner = (letter: "A" | "B" | "C") => {
-      const groupRows = valorantGroupsData[letter] ?? valorantGroupData[letter];
-      const sorted = [...groupRows].sort((a, b) => {
-        const aPoints = Number(a.points ?? 0) || 0;
-        const bPoints = Number(b.points ?? 0) || 0;
-        if (bPoints !== aPoints) return bPoints - aPoints;
-        return a.team.localeCompare(b.team);
-      });
-      return sorted[0]?.team ?? `Group ${letter} Winner`;
+    const computeStandings = (rows: SimpleGroupRow[]) => {
+      const teams = rows.map((r) => r.team);
+      const pts = Object.fromEntries(rows.map((r) => [r.team, Number(r.points ?? 0) || 0]));
+      const pairs: [number, number][] = [
+        [0, 1],
+        [0, 2],
+        [1, 2],
+      ];
+      const wins: Record<string, number> = Object.fromEntries(teams.map((t) => [t, 0]));
+      for (const [i, j] of pairs) {
+        const ti = teams[i];
+        const tj = teams[j];
+        const pi = pts[ti];
+        const pj = pts[tj];
+        const winner = pi === pj ? (ti.localeCompare(tj) <= 0 ? ti : tj) : pi > pj ? ti : tj;
+        wins[winner] = (wins[winner] ?? 0) + 1;
+      }
+      return rows
+        .map((r) => ({ ...r, gamesPlayed: 2, gamesWon: wins[r.team] ?? 0 }))
+        .sort((a, b) => {
+          const aw = Number(a.gamesWon ?? 0) || 0;
+          const bw = Number(b.gamesWon ?? 0) || 0;
+          if (bw !== aw) return bw - aw;
+          const ap = Number(a.points ?? 0) || 0;
+          const bp = Number(b.points ?? 0) || 0;
+          if (bp !== ap) return bp - ap;
+          return a.team.localeCompare(b.team);
+        });
     };
 
-    const A1 = getGroupWinner('A');
-    const B1 = getGroupWinner('B');
-    const C1 = getGroupWinner('C');
+    const Arows = (valorantGroupsData['A'] ?? valorantGroupData['A']).map((r, i) => ({ ...r, originalIndex: r.originalIndex ?? i }));
+    const Brows = (valorantGroupsData['B'] ?? valorantGroupData['B']).map((r, i) => ({ ...r, originalIndex: r.originalIndex ?? i }));
+    const Crows = (valorantGroupsData['C'] ?? valorantGroupData['C']).map((r, i) => ({ ...r, originalIndex: r.originalIndex ?? i }));
 
-    // Three-team knockout: A1 vs B1 in semifinal, winner faces C1 in final
-    const semifinals = [
-      { teamA: A1, teamB: B1, scoreA: 0, scoreB: 0, status: 'upcoming' as const },
+    const Awinner = computeStandings(Arows)[0]?.team ?? 'Group A Winner';
+    const Bwinner = computeStandings(Brows)[0]?.team ?? 'Group B Winner';
+    const Cwinner = computeStandings(Crows)[0]?.team ?? 'Group C Winner';
+
+    // Next Round: round-robin among 3 qualified teams
+    const nextTeams = [Awinner, Bwinner, Cwinner];
+    const nextPts = Object.fromEntries(nextTeams.map((t) => {
+      // seed by original points from groups (find in rows)
+      const src = [...Arows, ...Brows, ...Crows].find((r) => r.team === t);
+      return [t, Number(src?.points ?? 0) || 0];
+    }));
+    const nextPairs: [number, number][] = [
+      [0, 1],
+      [0, 2],
+      [1, 2],
     ];
+    const nextWins: Record<string, number> = Object.fromEntries(nextTeams.map((t) => [t, 0]));
+    for (const [i, j] of nextPairs) {
+      const ti = nextTeams[i];
+      const tj = nextTeams[j];
+      const pi = nextPts[ti];
+      const pj = nextPts[tj];
+      const winner = pi === pj ? (ti.localeCompare(tj) <= 0 ? ti : tj) : pi > pj ? ti : tj;
+      nextWins[winner] = (nextWins[winner] ?? 0) + 1;
+    }
+    const finalists = [...nextTeams]
+      .sort((a, b) => {
+        const aw = nextWins[a] ?? 0;
+        const bw = nextWins[b] ?? 0;
+        if (bw !== aw) return bw - aw;
+        const ap = Number(nextPts[a] ?? 0) || 0;
+        const bp = Number(nextPts[b] ?? 0) || 0;
+        if (bp !== ap) return bp - ap;
+        return a.localeCompare(b);
+      })
+      .slice(0, 2);
 
     const finals = [
-      { teamA: 'Winner SF1', teamB: C1, scoreA: 0, scoreB: 0, status: 'upcoming' as const },
+      { teamA: finalists[0] ?? 'Finalist 1', teamB: finalists[1] ?? 'Finalist 2', scoreA: 0, scoreB: 0, status: 'upcoming' as const },
     ];
 
     return {
       columns: [
-        { title: 'Semifinal', matches: semifinals },
         { title: 'Final', matches: finals },
       ],
     } as Bracket;
@@ -650,16 +728,9 @@ const EventLeaderboard = () => {
       if (newA !== newB) next.columns[col].matches[mIdx].status = 'completed';
 
       const match = next.columns[col].matches[mIdx];
-      if (match.scoreA !== match.scoreB) {
+      if (match.scoreA !== match.scoreB && col === 0 && mIdx === 0) {
         const winner = match.scoreA > match.scoreB ? match.teamA : match.teamB;
-        if (col === 0 && mIdx === 0) {
-          // Winner of semifinal advances to Final (teamA slot)
-          (next.columns[1].matches[0] as any).teamA = winner;
-        }
-        if (col === 1 && mIdx === 0) {
-          // Final decides the champion
-          (next as any).winner = winner;
-        }
+        (next as any).winner = winner;
       }
       return next;
     });
