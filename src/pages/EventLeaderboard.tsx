@@ -2335,7 +2335,7 @@ const EventLeaderboard = () => {
                   </Card>
                 </TabsContent>
 
-{gameId !== 'valorant' && (
+{true && (
                 <TabsContent value="group-c">
                   <Card className="glass-card border-primary/20">
                     <CardHeader>
