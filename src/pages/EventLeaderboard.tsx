@@ -1635,7 +1635,7 @@ const EventLeaderboard = () => {
 
     const isMobileLegends = gameId === "ml";
     const isValorant = gameId === "valorant";
-    const showGroupTotalPoints = !isMobileLegends;
+    const showGroupTotalPoints = !(isMobileLegends || isValorant);
 
 
 
