@@ -1056,7 +1056,7 @@ const EventLeaderboard = () => {
         const allowedEmail = (import.meta as any).env.VITE_ADMIN_EMAIL as string | undefined;
         if (data.session && (!allowedEmail || email === allowedEmail)) ok = true;
       } catch {}
-      if (mounted) setCanEdit(ok && eventId === "lock-load");
+      if (mounted) setCanEdit(ok);
     };
     check();
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
